@@ -8,6 +8,15 @@
 from scrapy import signals
 
 
+class ChangePostDataMiddleware(object):
+    def process_request(self,request,spider):
+        body=request.body
+        if body.find('%2B')>-1:
+            newbody=body.replace('%2B','+')
+            request=request.replace(body=newbody)
+            return request
+
+
 class HiltonSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the

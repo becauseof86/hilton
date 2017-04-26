@@ -29,7 +29,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 6
+DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -52,11 +52,12 @@ DEFAULT_REQUEST_HEADERS = {
 #    'hilton.middlewares.HiltonSpiderMiddleware': 543,
     #'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
 #}
-#DOWNLOADER_MIDDLEWARES = {
+DOWNLOADER_MIDDLEWARES = {
     #'scrapy_splash.SplashCookiesMiddleware': 723,
     #'scrapy_splash.SplashMiddleware': 725,
     #'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
- #   }
+    'hilton.middlewares.ChangePostDataMiddleware':1
+    }
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
@@ -69,9 +70,9 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'hilton.pipelines.HiltonPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'hilton.pipelines.HiltonPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -95,3 +96,5 @@ DEFAULT_REQUEST_HEADERS = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 #SPLASH_URL='http://127.0.0.1:8050'
 #DUPEFILTER_CLASS='scrapy_splash.SplashAwareDupeFilter'
+MONGO_URI='mongodb://admin:Aliyun1986@47.92.32.73:9877'
+MONGO_DATABASE='hilton'
