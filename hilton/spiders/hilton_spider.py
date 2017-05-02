@@ -3,9 +3,39 @@ import datetime
 from ..items import HiltonAvailabilityItem
 class HiltonSpider(scrapy.Spider):
     name='hilton'
-    hilton_codes={'CTULODI':r'DoubleTree by Hilton Hotel Chengdu Longquanyi',
-'CKGNADI':r'DoubleTree by Hilton Hotel Chongqing - Nan'an',
+    hilton_codes={'HAKHCDI':r'DoubleTree Resort by Hilton Hainan Chengmai',
+'SYXHQDI':r'DoubleTree Resort by Hilton Hotel Hainan -  Qixianling Hot Spring',
+'SYXDTDI':r'DoubleTree Resort by Hilton Hotel Sanya Haitang Bay',
+'JHGXIDI':r'DoubleTree Resort by Hilton Hotel Xishuangbanna',
+'SZVASDI':r'DoubleTree by Hilton Hotel Anhui - Suzhou',
+'AVAHSDI':r'DoubleTree by Hilton Hotel Anshun',
 'BJSDTDI':r'DoubleTree by Hilton Hotel Beijing',
+'CTULODI':r'DoubleTree by Hilton Hotel Chengdu Longquanyi',
+'CKGNADI':r'DoubleTree by Hilton Hotel Chongqing - Nan\'an',
+'CKGJBDI':r'DoubleTree by Hilton Hotel Chongqing North',
+'CKGCWDI':r'DoubleTree by Hilton Hotel Chongqing Wanzhou',
+'CANSCDI':r'DoubleTree by Hilton Hotel Guangzhou',
+'CANSRDI':r'DoubleTree by Hilton Hotel Guangzhou - Science City',
+'HGHHEDI':r'DoubleTree by Hilton Hotel Hangzhou East',
+'HUZHADI':r'DoubleTree by Hilton Hotel Heyuan',
+'WUXTJDI':r'DoubleTree by Hilton Hotel Jiangsu - Taizhou',
+'HGHJIDI':r'DoubleTree by Hilton Hotel Jiaxing',
+'OKANADI':r'DoubleTree by Hilton Hotel Naha',
+'OKANJDI':r'DoubleTree by Hilton Hotel Naha Shuri Castle',
+'NGBNCDI':r'DoubleTree by Hilton Hotel Ningbo - Chunxiao',
+'FOCLDDI':r'DoubleTree by Hilton Hotel Putian',
+'TAOLXDI':r'DoubleTree by Hilton Hotel Qingdao-Jimo',
+'GOQQGDI':r'DoubleTree by Hilton Hotel Qinghai - Golmud',
+'SHASPDI':r'DoubleTree by Hilton Hotel Shanghai - Pudong',
+'SHEDTDI':r'DoubleTree by Hilton Hotel Shenyang',
+'SZXDJDI':r'DoubleTree by Hilton Hotel Shenzhen Longhua',
+'XFNSHDI':r'DoubleTree by Hilton Hotel Shiyan',
+'SZVTVDI':r'DoubleTree by Hilton Hotel Suzhou',
+'NKGWUDI':r'DoubleTree by Hilton Hotel Wuhu',
+'WUXXDDI':r'DoubleTree by Hilton Hotel Wuxi',
+'XMNXHDI':r'DoubleTree by Hilton Hotel Xiamen - Haicang',
+'XMNWBDI':r'DoubleTree by Hilton Hotel Xiamen - Wuyuan Bay',
+'NGBNBDI':r'DoubleTree by Hilton Ningbo Beilun'
 }
     start_urls=['https://secure3.hilton.com/en_US/dt/reservation/book.htm?internalDeepLinking=true?inputModule=HOTEL_SEARCH&ctyhocn='+hilton_code for hilton_code in hilton_codes]
     today=datetime.date.today()
