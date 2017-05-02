@@ -71,7 +71,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'hilton.pipelines.HiltonPipeline': 300,
+    'hilton.pipelines.HiltonPipelineMysql': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -98,3 +98,9 @@ ITEM_PIPELINES = {
 #DUPEFILTER_CLASS='scrapy_splash.SplashAwareDupeFilter'
 MONGO_URI='mongodb://admin:Aliyun1986@47.92.32.73:9877'
 MONGO_DATABASE='hilton'
+
+MYSQL_HOST='47.92.32.73'
+MYSQL_USER='root'
+MYSQL_PASSWD='Aliyun1986'
+MYSQL_DB='hilton'
+MYSQL_PORT=3306
