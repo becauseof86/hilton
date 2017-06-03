@@ -1,54 +1,69 @@
+#coding:utf-8
 import scrapy
 import datetime
 from ..items import HiltonAvailabilityItem
+from scrapy.exceptions import CloseSpider
+import random
+import mysql.connector
+
 class HiltonSpider(scrapy.Spider):
     name='hilton'
-    hilton_codes={'HAKHCDI':r'DoubleTree Resort by Hilton Hainan Chengmai',
-'SYXHQDI':r'DoubleTree Resort by Hilton Hotel Hainan -  Qixianling Hot Spring',
-'SYXDTDI':r'DoubleTree Resort by Hilton Hotel Sanya Haitang Bay',
-'JHGXIDI':r'DoubleTree Resort by Hilton Hotel Xishuangbanna',
-'SZVASDI':r'DoubleTree by Hilton Hotel Anhui - Suzhou',
-'AVAHSDI':r'DoubleTree by Hilton Hotel Anshun',
-'BJSDTDI':r'DoubleTree by Hilton Hotel Beijing',
-'CTULODI':r'DoubleTree by Hilton Hotel Chengdu Longquanyi',
-'CKGNADI':r'DoubleTree by Hilton Hotel Chongqing - Nan\'an',
-'CKGJBDI':r'DoubleTree by Hilton Hotel Chongqing North',
-'CKGCWDI':r'DoubleTree by Hilton Hotel Chongqing Wanzhou',
-'CANSCDI':r'DoubleTree by Hilton Hotel Guangzhou',
-'CANSRDI':r'DoubleTree by Hilton Hotel Guangzhou - Science City',
-'HGHHEDI':r'DoubleTree by Hilton Hotel Hangzhou East',
-'HUZHADI':r'DoubleTree by Hilton Hotel Heyuan',
-'WUXTJDI':r'DoubleTree by Hilton Hotel Jiangsu - Taizhou',
-'HGHJIDI':r'DoubleTree by Hilton Hotel Jiaxing',
-'OKANADI':r'DoubleTree by Hilton Hotel Naha',
-'OKANJDI':r'DoubleTree by Hilton Hotel Naha Shuri Castle',
-'NGBNCDI':r'DoubleTree by Hilton Hotel Ningbo - Chunxiao',
-'FOCLDDI':r'DoubleTree by Hilton Hotel Putian',
-'TAOLXDI':r'DoubleTree by Hilton Hotel Qingdao-Jimo',
-'GOQQGDI':r'DoubleTree by Hilton Hotel Qinghai - Golmud',
-'SHASPDI':r'DoubleTree by Hilton Hotel Shanghai - Pudong',
-'SHEDTDI':r'DoubleTree by Hilton Hotel Shenyang',
-'SZXDJDI':r'DoubleTree by Hilton Hotel Shenzhen Longhua',
-'XFNSHDI':r'DoubleTree by Hilton Hotel Shiyan',
-'SZVTVDI':r'DoubleTree by Hilton Hotel Suzhou',
-'NKGWUDI':r'DoubleTree by Hilton Hotel Wuhu',
-'WUXXDDI':r'DoubleTree by Hilton Hotel Wuxi',
-'XMNXHDI':r'DoubleTree by Hilton Hotel Xiamen - Haicang',
-'XMNWBDI':r'DoubleTree by Hilton Hotel Xiamen - Wuyuan Bay',
-'NGBNBDI':r'DoubleTree by Hilton Ningbo Beilun'
-}
-    start_urls=['https://secure3.hilton.com/en_US/dt/reservation/book.htm?internalDeepLinking=true?inputModule=HOTEL_SEARCH&ctyhocn='+hilton_code for hilton_code in hilton_codes]
+    custom_settings={
+    'RETRY_ENABLED':True,
+    'RETRY_TIMES':20,
+    'RETRY_HTTP_CODES':[500, 502, 503, 504, 408,403,404],
+    'DOWNLOAD_DELAY' : 0.1,
+    'CONCURRENT_REQUESTS' :32,
+    'CONCURRENT_REQUESTS_PER_DOMAIN' : 32
+    }
     today=datetime.date.today()
     seven_days=datetime.timedelta(days=7)
     eight_days=datetime.timedelta(days=8)
+    
+    def __init__(self,settings):
+        self.mysql_host=settings.get('MYSQL_HOST')
+        self.mysql_user=settings.get('MYSQL_USER')
+        self.mysql_passwd=settings.get('MYSQL_PASSWD')
+        self.mysql_db=settings.get('MYSQL_DB')
+        self.mysql_port=settings.get('MYSQL_PORT')
+        self.connection=mysql.connect(host=self.mysql_host,user=self.mysql_user,password=self.mysql_passwd,database=self.mysql_db,port=self.mysql_port)
+        self.cursor=self.connection.cursor()
+        super(HiltonSpider,self).__init__()
+    @classmethod
+    def from_crawler(cls,crawler):
+        settings=crawler.settings
+        spider=cls(settings)
+        crawler.signals.connect(spider.close_spider, signal=signals.spider_closed)
+        return spider
+    
     def start_requests(self):
-        
-        for url in self.start_urls:
+        sql='SELECT * FROM validproxy'
+        self.cursor.execute(sql)
+        result_tuple=self.cursor.fetchall()
+        if result_tuple:
+            proxy_pool=dict((tuple[0],0) for tuple in result_tuple)
+        else:
+            raise CloseSpider('no proxy ip in table validproxy')
+
+        sql='select ctyhocn,name from hotel_detail where status="OPEN" and country="China" and ((open_date is not NULL and DateDiff(Now(),str_to_date(open_date,"%d %M %Y"))>=0) or open_date is NULL)'
+        self.cursor.execute(sql)
+        result_tuple=self.cursor.fetchall()
+        if result_tuple:
+            hilton_codes=dict(result_tuple)
+            if hilton_codes.get('WUXTJDI',None):
+                del hilton_codes['WUXTJDI']  #DELETE TAIZHOU HILTON 
+        else:
+            raise CloseSpider('no hiltoncode in hotel_detail')
+        #print hilton_codes
+        self.start_urls=['https://secure3.hilton.com/en_US/dt/reservation/book.htm?internalDeepLinking=true?inputModule=HOTEL_SEARCH&ctyhocn='+hilton_code for hilton_code in hilton_codes]
+       
+        for i,url in enumerate(self.start_urls):
             room_availability={
             'room':{},
-            'name':self.hilton_codes[url[-7:]]
+            'name':hilton_codes[url[-7:]]
             }
-            yield scrapy.Request(url,self.parse,dont_filter=True,meta={'ctyhocn':url[-7:],'date':self.today,'room_availability':room_availability})
+            #meta里边先随机从proxy_pool里挑一个proxy使用,顺便把整个proxy_pool往下传 方便后面的middleware遇到代理不能使用的时候继续随机挑选其他代理
+            yield scrapy.Request(url,self.parse,dont_filter=True,meta={'proxy':random.choice(proxy_pool.keys()),'proxy_pool':proxy_pool,'ctyhocn':url[-7:],'date':self.today,'room_availability':room_availability,'cookiejar':i}) #'cookiejar':i 每一个起始request都有各自的cookie,不能互相混淆
     def parse(self,response):
         date=response.meta['date']
         arrival_date=(date+self.seven_days).strftime('%d+%b+%Y')
@@ -61,8 +76,8 @@ class HiltonSpider(scrapy.Spider):
         'rewardBooking':'true',
         '_rewardBooking':'on'
         }
-        new_date_for_next_request=date+self.seven_days+self.eight_days
-        yield scrapy.FormRequest.from_response(response,formdata=formdata,callback=self.after_query,dont_filter=True,meta={'ctyhocn':response.meta['ctyhocn'],'date':new_date_for_next_request,'room_availability':response.meta['room_availability']})
+        new_date_for_next_request=date+self.seven_days+self.eight_days           
+        yield scrapy.FormRequest.from_response(response,formdata=formdata,callback=self.after_query,dont_filter=True,meta={'proxy':response.meta.get('proxy',''),'proxy_pool':response.meta.get('proxy_pool',''),'ctyhocn':response.meta['ctyhocn'],'date':new_date_for_next_request,'room_availability':response.meta['room_availability'],'cookiejar':response.meta['cookiejar']})
 
     def after_query(self,response):
         item=HiltonAvailabilityItem()
@@ -103,23 +118,14 @@ class HiltonSpider(scrapy.Spider):
             'selectedRequestedRate':'POINTS_STANDARD_REDEMPTION'
             }
             new_date_for_next_request=date+self.seven_days+self.eight_days
-            yield scrapy.FormRequest.from_response(response,formdata=formdata,callback=self.after_query,dont_filter=True,meta={'ctyhocn':response.meta['ctyhocn'],'date':new_date_for_next_request,'room_availability':response.meta['room_availability']})
+            yield scrapy.FormRequest.from_response(response,formdata=formdata,callback=self.after_query,dont_filter=True,meta={'proxy':response.meta.get('proxy',''),'proxy_pool':response.meta.get('proxy_pool',''),'ctyhocn':response.meta['ctyhocn'],'date':new_date_for_next_request,'room_availability':response.meta['room_availability'],'cookiejar':response.meta['cookiejar']})
         else:
             response.meta['room_availability']['update_time']=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             yield response.meta['room_availability']
             
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def close_spider(self):
+        self.cursor.close()
+        self.connection.close()
+        print '-----------------'
+        print u'closing database'
+        print '-----------------' 
