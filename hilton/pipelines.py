@@ -71,14 +71,14 @@ class HiltonPipelineMysql(object):
             print '查询匹配noticeset结果为'
             print result_tuple
             if result_tuple:
-                mailsender0=MailSender('smtp.qq.com','95605319@qq.com','95605319','leuqpblcyunlcahg',465,smtpssl=True)
-                mailsender1=MailSender('smtp.exmail.qq.com','bin@data8.info','bin@data8.info','Xb198624',465,smtpssl=True)
-                mailsender2=MailSender('smtp.exmail.qq.com','toby@data8.info','toby@data8.info','Xb198624',465,smtpssl=True)
-                mailsender3=MailSender('smtp.exmail.qq.com','yale@data8.info','yale@data8.info','Xb198624',465,smtpssl=True)
-                mailsender4=MailSender('smtp.exmail.qq.com','darnell@data8.info','darnell@data8.info','Xb198624',465,smtpssl=True)
-                mailsender5=MailSender('smtp.exmail.qq.com','flora@data8.info','flora@data8.info','Xb198624',465,smtpssl=True)
-                mailsender6=MailSender('smtp.exmail.qq.com','lena@data8.info','lena@data8.info','Xb198624',465,smtpssl=True)
-                mailsender7=MailSender('smtp.exmail.qq.com','martin@data8.info','martin@data8.info','Xb198624',465,smtpssl=True)
+                mailsender0=MailSender('smtp.qq.com','95605319@qq.com','95605319','lhytrhunlcahg',465,smtpssl=True)
+                mailsender1=MailSender('smtp.exmail.qq.com','bin@data8.info','bin@data8.info','hytrhy',465,smtpssl=True)
+                mailsender2=MailSender('smtp.exmail.qq.com','toby@data8.info','toby@data8.info','yhytrhyt',465,smtpssl=True)
+                mailsender3=MailSender('smtp.exmail.qq.com','yale@data8.info','yale@data8.info','y6y65',465,smtpssl=True)
+                mailsender4=MailSender('smtp.exmail.qq.com','darnell@data8.info','darnell@data8.info','y6htrhy',465,smtpssl=True)
+                mailsender5=MailSender('smtp.exmail.qq.com','flora@data8.info','flora@data8.info','y6545y6',465,smtpssl=True)
+                mailsender6=MailSender('smtp.exmail.qq.com','lena@data8.info','lena@data8.info','y64y6',465,smtpssl=True)
+                mailsender7=MailSender('smtp.exmail.qq.com','martin@data8.info','martin@data8.info','y65yy6',465,smtpssl=True)
                 mailsender=choice([mailsender2,mailsender3,mailsender4,mailsender5,mailsender6,mailsender7])
                 maillist=[]
                 openid_list=[]
